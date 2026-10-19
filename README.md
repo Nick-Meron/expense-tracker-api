@@ -1,59 +1,117 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Expense Tracker API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+REST API for a personal expense tracker mobile app. Built with Laravel 12, MySQL and Laravel Sanctum token authentication.
 
-## About Laravel
+Mobile app repository: [expense-tracker-app](https://github.com/Nick-Meron/expense-tracker-app)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Register, log in and log out with token authentication (Laravel Sanctum)
+- Create, edit and delete income and expense categories
+- Create, list, edit and delete transactions, with an optional month filter
+- Monthly summary: total income, total expenses, balance and totals per category
+- Every query is scoped to the logged-in user, so users can only see their own data
+- Input validation on all create and update endpoints
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Tech stack
 
-## Learning Laravel
+- PHP 8.2
+- Laravel 12
+- MySQL
+- Laravel Sanctum (token authentication)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## API endpoints
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+All endpoints are under `/api`. Endpoints marked "Token" need the header `Authorization: Bearer <token>`. Send `Accept: application/json` with every request.
 
-## Laravel Sponsors
+| Method | Endpoint | Token | Description |
+|---|---|---|---|
+| POST | `/register` | No | Create an account and get a token |
+| POST | `/login` | No | Log in and get a token |
+| POST | `/logout` | Yes | Delete the current token |
+| GET | `/user` | Yes | Get the logged-in user |
+| GET | `/categories` | Yes | List your categories |
+| POST | `/categories` | Yes | Create a category (`name`, `type`: income or expense) |
+| PUT | `/categories/{id}` | Yes | Update a category |
+| DELETE | `/categories/{id}` | Yes | Delete a category |
+| GET | `/transactions` | Yes | List your transactions (optional `?month=YYYY-MM`) |
+| POST | `/transactions` | Yes | Create a transaction (`category_id`, `amount`, `note`, `date`) |
+| PUT | `/transactions/{id}` | Yes | Update a transaction |
+| DELETE | `/transactions/{id}` | Yes | Delete a transaction |
+| GET | `/summary` | Yes | Monthly totals (optional `?month=YYYY-MM`) |
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Database
 
-### Premium Partners
+Three main tables:
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- `users`: id, name, email, password
+- `categories`: id, user_id, name, type (income or expense)
+- `transactions`: id, user_id, category_id, amount, note, date
 
-## Contributing
+Deleting a user or a category also deletes the related rows (cascade).
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Getting started
 
-## Code of Conduct
+Requirements: PHP 8.2 or higher, Composer and MySQL.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+1. Clone the repository and open the folder:
 
-## Security Vulnerabilities
+```
+   git clone https://github.com/Nick-Meron/expense-tracker-api.git
+   cd expense-tracker-api
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+2. Install the dependencies:
 
-## License
+```
+   composer install
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+3. Create your environment file:
+
+```
+   copy .env.example .env
+```
+
+   On macOS or Linux use `cp .env.example .env`.
+
+4. Create an empty MySQL database called `expense_tracker`, then open `.env` and set the database section:
+
+```
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=expense_tracker
+   DB_USERNAME=root
+   DB_PASSWORD=
+```
+
+5. Generate the app key and create the tables:
+
+```
+   php artisan key:generate
+   php artisan migrate
+```
+
+6. Start the server:
+
+```
+   php artisan serve --host=0.0.0.0 --port=8000
+```
+
+The API is now available at `http://127.0.0.1:8000/api`.
+
+## Example request
+
+Register a user (PowerShell):
+
+```
+Invoke-RestMethod -Method Post -Uri http://127.0.0.1:8000/api/register -ContentType "application/json" -Headers @{Accept="application/json"} -Body '{"name":"Test User","email":"test@example.com","password":"secret123"}'
+```
+
+The response contains the user and a `token`. Use that token in the `Authorization: Bearer <token>` header for the other endpoints.
+
+## Notes
+
+- The `.env` file is not committed. It holds local settings and must stay private.
+- Built as a portfolio project to practise REST API design, authentication and relational database modelling.
